@@ -1,8 +1,7 @@
 import os
 
 import dash
-from dash import html, dcc, Input, Output, State, callback
-import dash_uploader as du
+from dash import html, dcc
 
 
 # ============================================================
@@ -11,29 +10,6 @@ import dash_uploader as du
 
 dash.register_page(__name__, path="/")
 
-
-# ============================================================
-# Directories
-# ============================================================
-
-UPLOAD_DIR = r"G:\My Drive\PPMAndSubs\Investors"
-PPM_DIR = os.path.abspath(r"G:\My Drive\PPMAndSubs\PPMs")
-
-
-# ============================================================
-# Helper functions
-# ============================================================
-
-def get_file_icon(filename):
-    return "📄"
-
-
-def list_ppm_files():
-    try:
-        files = os.listdir(PPM_DIR)
-        return [f for f in files if f.endswith(".pdf")]
-    except FileNotFoundError:
-        return []
 
 
 # ============================================================
@@ -65,101 +41,56 @@ layout = html.Div([
             "margin": "0 auto 20px auto",
         }
     ),
-
     # --------------------------------------------------------
-    # New user button
-    # --------------------------------------------------------
-
-    dcc.Link(
-        html.Button("New user"),
-        href="/new-user"
-    ),
-
-    # --------------------------------------------------------
-    # Upload section
-    # --------------------------------------------------------
-
-    html.H1(
-        "Drag and Drop File Upload",
-        style={
-            "fontSize": "30px",
-            "fontFamily": "Times New Roman, serif",
-        }
-    ),
-
-    du.Upload(
-        id="upload-file",
-        text="Drag and drop a file here or click to select",
-        max_file_size=10,
-        filetypes=["pdf"],
-        default_style={
-            "border": "2px dashed #ccc",
-            "padding": "20px",
-            "text-align": "center",
-            "margin": "20px",
-        },
-    ),
-
-    html.Div(id="upload-status"),
-
-    # --------------------------------------------------------
-    # PPM section
+    # Text
     # --------------------------------------------------------
 
     html.H2(
-        "Display PPMs",
-        style={
-            "fontSize": "30px",
-            "fontFamily": "Times New Roman, serif",
-        }
+            [
+            "Subscribe or redeem in one click to hedge funds.",
+            html.Br(),
+            html.Br(),
+            "Get a summary of the risks in the PPM.",
+            html.Br(),
+            html.Br(),
+            "Monitor your investments and get alerts when new PPMs are available.",
+            html.Br(),
+            html.Br(),
+            "Chat directly with managers",
+            html.Br(),
+            html.Br(),
+            "Get reminders for your subscription and redemption deadlines.",
+            ],
+            style={
+                "fontSize": "20px",
+                "fontFamily": "Times New Roman, serif",
+                "textAlign": "left",
+                "marginLeft": "100px",
+                "marginBottom": "10px",
+            }
+        ),
+
+
+    # --------------------------------------------------------
+    # Buttons
+    # --------------------------------------------------------
+
+    dcc.Link(
+        html.Button("New user", style={"width": "200px", "fontsize": "200px"}),
+        href="/new-user"
     ),
 
-    html.Div(
-        id="ppm-files",
-        children=[
-            html.A(
-                [
-                    html.Span(
-                        get_file_icon(file),
-                        style={"margin-right": "10px"}
-                    ),
-                    html.Span(file),
-                ],
-                href=f"/ppms/{file}",
-                target="_blank",
-                style={
-                    "margin": "10px",
-                    "padding": "5px",
-                    "border": "1px solid #ddd",
-                    "display": "block"
-                }
-            )
-            for file in list_ppm_files()
-        ]
-    ),
-])
+    dcc.Link(
+            html.Button("Select Managers", style={"width": "200px"}),
+            href="/select-managers"
+        ),
 
-
-# ============================================================
-# Callback: upload status
-# ============================================================
-
-@callback(
-    Output("upload-status", "children"),
-    Input("upload-file", "isCompleted"),
-    State("upload-file", "fileNames"),
-    State("upload-file", "upload_id"),
+    ],
+ style={
+            "display": "flex",
+            "flexDirection": "column",
+            "alignItems": "left",
+            "marginLeft": "30px",
+            "gap": "10px",
+        },
 )
-def update_status(is_completed, file_names, upload_id):
-
-    if is_completed:
-        return html.Div([
-            html.P(
-                f"File(s) uploaded: {', '.join(file_names)}"
-            ),
-            html.P(
-                f"Saved to: {os.path.abspath(UPLOAD_DIR)}"
-            ),
-        ])
-
-    return html.P("Upload a file to see the status.")

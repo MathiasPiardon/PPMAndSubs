@@ -1,0 +1,45 @@
+:root {
+    /* Colors */
+    --color-background: hsl(30, 6%, 93%);
+    --color-main:        hsl(24, 66%, 49%);
+    --color-sec-succes:      hsl(140, 80%, 90%);
+    --color-sec-warning:    hsl(273, 66%, 49%);
+    --color-sec-dangerous:    hsl(7, 80%, 90%);
+    --color-neutral:       hsl(200, 80%, 90%);
+     /* Typography */
+    --font-family: Arial, sans-serif;
+    --color-text: hsl(0, 0%, 20%);
+
+}
+
+html,
+body {
+    margin: 0;
+    background-color: var(--color-background);
+    font-family: var(--font-family);
+    color: var(--color-text);
+}
+
+/* Dash page content */
+#_dash-app-content {
+    background-color: var(--color-background);
+    min-height: 100vh;
+    font-family: var(--font-family);
+    color: var(--color-text);
+}
+
+.my-main {
+    background-color: var(--color-main);
+}
+.my-sec-succes {
+    background-color: var(--color-sec-succes);
+}
+.my-sec-warning {
+    background-color: var(--color-sec-warning);
+}
+.my-sec-dangerous {
+    background-color: var(--color-sec-dangerous);
+}
+.my-neutral {
+    background-color: var(--color-neutral);
+}

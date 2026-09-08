@@ -24,7 +24,6 @@ os.makedirs(PPM_DIR, exist_ok=True)
 app = Dash(
     __name__,
     use_pages=True,
-    external_stylesheets=[dbc.themes.SLATE],
 )
 
 
