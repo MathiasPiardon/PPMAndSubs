@@ -60,6 +60,8 @@ layout = html.Div([
             html.Br(),
             html.Br(),
             "Get reminders for your subscription and redemption deadlines.",
+            html.Br(),
+            html.Br(),
             ],
             style={
                 "fontSize": "20px",
@@ -75,17 +77,43 @@ layout = html.Div([
     # Buttons
     # --------------------------------------------------------
 
-    dcc.Link(
-        html.Button("New user", style={"width": "200px", "fontsize": "200px"}),
-        href="/new-user"
-    ),
+    html.Div(
+            [
+                dcc.Link(
+                    html.Button(
+                        "New user",
+                        style={
+                            "width": "200px",
+                            "fontSize": "20px",
+                            "backgroundColor": "White",
+                            "borderColor": "hsl(24, 66%, 49%)",
+                        }
+                    ),
+                    href="/new-user"
+                ),
 
-    dcc.Link(
-            html.Button("Select Managers", style={"width": "200px"}),
-            href="/select-managers"
+                dcc.Link(
+                    html.Button(
+                        "Select Managers",
+                        style={
+                            "width": "200px",
+                            "fontSize": "20px",
+                            "backgroundColor": "White",
+                            "borderColor": "hsl(140, 80%, 90%)",
+                        }
+                    ),
+                    href="/select-managers"
+                ),
+            ],
+            style={
+                "display": "flex",
+                "gap": "20px",
+                "justifyContent": "center",
+            }
         ),
 
     ],
+"""
  style={
             "display": "flex",
             "flexDirection": "column",
@@ -93,4 +121,7 @@ layout = html.Div([
             "marginLeft": "30px",
             "gap": "10px",
         },
+"""
+
+
 )

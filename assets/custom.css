@@ -6,6 +6,14 @@
     --color-sec-warning:    hsl(273, 66%, 49%);
     --color-sec-dangerous:    hsl(7, 80%, 90%);
     --color-neutral:       hsl(200, 80%, 90%);
+
+     /* Background gradient */
+    --background-gradient: linear-gradient(
+        135deg,
+        hsl(30, 6%, 93%),
+        hsl(24, 40%, 85%)
+    );
+
      /* Typography */
     --font-family: Arial, sans-serif;
     --color-text: hsl(0, 0%, 20%);
@@ -15,6 +23,8 @@
 html,
 body {
     margin: 0;
+    min-height: 100%;
+    background: var(--background-gradient);
     background-color: var(--color-background);
     font-family: var(--font-family);
     color: var(--color-text);
@@ -22,7 +32,7 @@ body {
 
 /* Dash page content */
 #_dash-app-content {
-    background-color: var(--color-background);
+    background: transparent;
     min-height: 100vh;
     font-family: var(--font-family);
     color: var(--color-text);
