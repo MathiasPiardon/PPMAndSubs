@@ -5,7 +5,7 @@ import dash_uploader as du
 
 from utils.ReadDataFromDoc import parse_passport
 from utils.SaveInvestorData import SaveInvestorData
-
+from utils.SaveInvestorData import SaveUsernameAndPassword
 
 dash.register_page(__name__, path="/new-user")
 
@@ -48,18 +48,56 @@ layout = html.Div(
             }
         ),
 
-        dcc.Input(
-            id="first-name",
-            placeholder="First name",
-            style={"width": "400px"}
+        # ---------------------------------------------------------
+        # First name + Username
+        # ---------------------------------------------------------
+        html.Div(
+            [
+                dcc.Input(
+                    id="first-name",
+                    placeholder="First name",
+                    style={"width": "400px"}
+                ),
+
+                dcc.Input(
+                    id="username",
+                    placeholder="Username",
+                    style={"width": "400px"}
+                ),
+            ],
+            style={
+                "display": "flex",
+                "gap": "20px",
+            }
         ),
 
-        dcc.Input(
-            id="last-name",
-            placeholder="Last name",
-            style={"width": "400px"}
+        # ---------------------------------------------------------
+        # Last name + Password
+        # ---------------------------------------------------------
+        html.Div(
+            [
+                dcc.Input(
+                    id="last-name",
+                    placeholder="Last name",
+                    style={"width": "400px"}
+                ),
+
+                dcc.Input(
+                    id="password",
+                    placeholder="Password",
+                    type="password",
+                    style={"width": "400px"}
+                ),
+            ],
+            style={
+                "display": "flex",
+                "gap": "20px",
+            }
         ),
 
+        # ---------------------------------------------------------
+        # Remaining user information
+        # ---------------------------------------------------------
         dcc.Input(
             id="date-of-birth",
             placeholder="Date of Birth",
@@ -151,6 +189,10 @@ layout = html.Div(
 )
 
 
+# ================================================================
+# SAVE USER
+# ================================================================
+
 @callback(
     Output("save-status", "children"),
 
@@ -163,6 +205,8 @@ layout = html.Div(
     State("sex", "value"),
     State("proof-of-id_number", "value"),
     State("email", "value"),
+    State("username", "value"),
+    State("password", "value"),
 
     prevent_initial_call=True,
 )
@@ -175,6 +219,8 @@ def save_investor_data(
     sex,
     proof_of_id_number,
     email,
+    username,
+    password
 ):
 
     if not n_clicks:
@@ -188,6 +234,8 @@ def save_investor_data(
         "Sex": sex,
         "Proof of ID Number": proof_of_id_number,
         "Email": email,
+        "Username": username,
+        "Password": password
     }
 
     missing_fields = [
@@ -203,18 +251,23 @@ def save_investor_data(
                 html.P(
                     "Please populate all fields before saving."
                 ),
+
                 html.P(
                     "Missing fields: "
                     + ", ".join(missing_fields)
                 ),
             ],
+
             style={
                 "fontWeight": "bold",
             },
         )
+# ================================================================
+# Save investor data to the database
+# ================================================================
 
     try:
-
+        # 1. Save investor data
         investor_id = SaveInvestorData(
             first_name=first_name.strip(),
             last_name=last_name.strip(),
@@ -225,36 +278,38 @@ def save_investor_data(
             email=email.strip(),
         )
 
+        # 2. Save username and password
+        SaveUsernameAndPassword(
+            investorID=investor_id,
+            username=username,
+            password=password
+        )
+
+        # 3. Return only after both succeeded
         return html.Div(
             [
-                html.P(
-                    "Investor successfully saved."
-                ),
-                html.P(
-                    f"Investor ID: {investor_id}"
-                ),
+                html.P("Investor successfully saved."),
+                html.P(f"Investor ID: {investor_id}"),
+                html.P("Username and password successfully saved."),
             ],
-            style={
-                "fontWeight": "bold",
-            },
+            style={"fontWeight": "bold"},
         )
 
     except Exception as e:
-
         return html.Div(
             [
-                html.P(
-                    "The investor could not be saved."
-                ),
-                html.P(
-                    f"Database error: {e}"
-                ),
+                html.P("The investor could not be saved."),
+                html.P(f"Database error: {e}"),
             ],
-            style={
-                "fontWeight": "bold",
-            },
+            style={"fontWeight": "bold"},
         )
 
+        
+
+
+# ================================================================
+# UPLOAD PROOF OF ID
+# ================================================================
 
 @callback(
     [
@@ -290,12 +345,14 @@ def update_status(
     )
 
     if not is_completed:
+
         return (
             html.P("Upload a file to see the status."),
             *empty_values,
         )
 
     if not file_names:
+
         return (
             html.P("No file was uploaded."),
             *empty_values,
@@ -408,9 +465,11 @@ def update_status(
         if temporary_folder and os.path.isdir(temporary_folder):
 
             try:
+
                 os.rmdir(temporary_folder)
 
             except OSError:
+
                 pass
 
         saved_files.append(
@@ -427,35 +486,45 @@ def update_status(
         passport_number = passport_data.get("passport_number")
 
         if date_of_birth:
+
             date_of_birth = date_of_birth.strftime("%Y-%m-%d")
 
         status_message = html.Div(
             [
                 html.P("Passport successfully read."),
+
                 html.P("Extracted information:"),
+
                 html.Ul(
                     [
                         html.Li(
                             f"First name: {first_name}"
                         ),
+
                         html.Li(
                             f"Last name: {last_name}"
                         ),
+
                         html.Li(
                             f"Date of birth: {date_of_birth}"
                         ),
+
                         html.Li(
                             f"Nationality: {nationality}"
                         ),
+
                         html.Li(
                             f"Sex: {sex}"
                         ),
+
                         html.Li(
                             f"Passport number: {passport_number}"
                         ),
                     ]
                 ),
+
                 html.P("Saved to:"),
+
                 html.Ul(
                     [
                         html.Li(path)
@@ -479,7 +548,9 @@ def update_status(
         html.Div(
             [
                 html.P("File uploaded and saved."),
+
                 html.P("Saved to:"),
+
                 html.Ul(
                     [
                         html.Li(path)
@@ -488,6 +559,6 @@ def update_status(
                 ),
             ]
         ),
+
         *empty_values,
     )
-

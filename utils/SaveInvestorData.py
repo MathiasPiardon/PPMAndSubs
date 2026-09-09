@@ -12,7 +12,8 @@ def SaveInvestorData(
     email
 ):
     """
-    Saves investor data to the PPMAndSubs.Investors table.
+    Saves investor data to the PPMAndSubs.Investors table
+    and returns the automatically generated investorID.
     """
 
     connection = None
@@ -32,7 +33,8 @@ def SaveInvestorData(
                     proof_of_id_number,
                     email
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s);
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                RETURNING "investorID";
             '''
 
             cursor.execute(
@@ -45,6 +47,51 @@ def SaveInvestorData(
                     sex,
                     proof_of_id_number,
                     email
+                )
+            )
+
+            investor_id = cursor.fetchone()[0]
+
+        connection.commit()
+
+        return investor_id
+
+    except Exception:
+        if connection:
+            connection.rollback()
+        raise
+
+    finally:
+        if connection:
+            connection.close()
+
+def SaveUsernameAndPassword(investorID, username, password):
+    """
+    Saves username and password to the PPMAndSubs.UserIDs table.
+    """
+
+    connection = None
+
+    try:
+        connection = psycopg2.connect(**db_params)
+
+        with connection.cursor() as cursor:
+            sql = '''
+                INSERT INTO "PPMAndSubs"."UserIDs"
+                (
+                    "investorID",
+                    user_name,
+                    password
+                )
+                VALUES (%s, %s, %s);
+            '''
+
+            cursor.execute(
+                sql,
+                (
+                    investorID,
+                    username,
+                    password
                 )
             )
 
