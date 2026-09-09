@@ -54,11 +54,14 @@ def convert_mrz_date(value):
     if not value:
         return None
 
-    return datetime.strptime(value, "%y%m%d").date()
+    try:
+        return datetime.strptime(value, "%y%m%d").date()
+    except ValueError:
+        return None
 
 # test but call functions from MAin and # those ones
-path = Path(r"G:\My Drive\PPMAndSubs\Investors\PassportMP.pdf")
+#path = Path(r"G:\My Drive\PPMAndSubs\Investors\PassportMP.pdf")
 
-data = parse_passport(str(path))
+#data = parse_passport(str(path))
 
-print(data)
+#print(data)
