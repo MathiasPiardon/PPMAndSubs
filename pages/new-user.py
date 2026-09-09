@@ -4,23 +4,15 @@ from dash import html, dcc, callback, Input, Output, State
 import dash_uploader as du
 
 from utils.ReadDataFromDoc import parse_passport
+from utils.SaveInvestorData import SaveInvestorData
 
 
-# ============================================================
-# Register page
-# ============================================================
 dash.register_page(__name__, path="/new-user")
 
 
-# ============================================================
-# Directories
-# ============================================================
 UPLOAD_DIR = r"G:\My Drive\PPMAndSubs\Investors"
 
 
-# ============================================================
-# Layout
-# ============================================================
 layout = html.Div(
     [
         dcc.Link(
@@ -56,9 +48,6 @@ layout = html.Div(
             }
         ),
 
-        # ----------------------------------------------------
-        # User information
-        # ----------------------------------------------------
         dcc.Input(
             id="first-name",
             placeholder="First name",
@@ -104,7 +93,16 @@ layout = html.Div(
         html.Button(
             "Save",
             id="save-user",
+            n_clicks=0,
             style={"width": "200px"}
+        ),
+
+        html.Div(
+            id="save-status",
+            style={
+                "marginTop": "10px",
+                "fontSize": "18px",
+            }
         ),
 
         html.Hr(
@@ -117,9 +115,6 @@ layout = html.Div(
             }
         ),
 
-        # ----------------------------------------------------
-        # Drag & Drop File Upload
-        # ----------------------------------------------------
         html.H1(
             "Upload Proof of ID",
             style={
@@ -156,14 +151,114 @@ layout = html.Div(
 )
 
 
-# ============================================================
-# Callback: upload + organize file + parse passport
-# ============================================================
+@callback(
+    Output("save-status", "children"),
+
+    Input("save-user", "n_clicks"),
+
+    State("first-name", "value"),
+    State("last-name", "value"),
+    State("date-of-birth", "value"),
+    State("nationality", "value"),
+    State("sex", "value"),
+    State("proof-of-id_number", "value"),
+    State("email", "value"),
+
+    prevent_initial_call=True,
+)
+def save_investor_data(
+    n_clicks,
+    first_name,
+    last_name,
+    date_of_birth,
+    nationality,
+    sex,
+    proof_of_id_number,
+    email,
+):
+
+    if not n_clicks:
+        return None
+
+    fields = {
+        "First name": first_name,
+        "Last name": last_name,
+        "Date of birth": date_of_birth,
+        "Nationality": nationality,
+        "Sex": sex,
+        "Proof of ID Number": proof_of_id_number,
+        "Email": email,
+    }
+
+    missing_fields = [
+        field_name
+        for field_name, value in fields.items()
+        if value is None or str(value).strip() == ""
+    ]
+
+    if missing_fields:
+
+        return html.Div(
+            [
+                html.P(
+                    "Please populate all fields before saving."
+                ),
+                html.P(
+                    "Missing fields: "
+                    + ", ".join(missing_fields)
+                ),
+            ],
+            style={
+                "fontWeight": "bold",
+            },
+        )
+
+    try:
+
+        investor_id = SaveInvestorData(
+            first_name=first_name.strip(),
+            last_name=last_name.strip(),
+            date_of_birth=date_of_birth,
+            nationality=nationality.strip(),
+            sex=sex.strip(),
+            proof_of_id_number=proof_of_id_number.strip(),
+            email=email.strip(),
+        )
+
+        return html.Div(
+            [
+                html.P(
+                    "Investor successfully saved."
+                ),
+                html.P(
+                    f"Investor ID: {investor_id}"
+                ),
+            ],
+            style={
+                "fontWeight": "bold",
+            },
+        )
+
+    except Exception as e:
+
+        return html.Div(
+            [
+                html.P(
+                    "The investor could not be saved."
+                ),
+                html.P(
+                    f"Database error: {e}"
+                ),
+            ],
+            style={
+                "fontWeight": "bold",
+            },
+        )
+
+
 @callback(
     [
         Output("upload-status", "children"),
-
-        # Populate user fields
         Output("first-name", "value"),
         Output("last-name", "value"),
         Output("date-of-birth", "value"),
@@ -177,7 +272,6 @@ layout = html.Div(
     State("upload-file", "fileNames"),
     State("upload-file", "upload_id"),
 
-    # Prevent Dash from overwriting existing values before upload
     prevent_initial_call=False,
 )
 def update_status(
@@ -185,16 +279,14 @@ def update_status(
     file_names,
     upload_id,
 ):
-    # --------------------------------------------------------
-    # Default values
-    # --------------------------------------------------------
+
     empty_values = (
-        None,   # first name
-        None,   # last name
-        None,   # date of birth
-        None,   # nationality
-        None,   # sex
-        None,   # passport number
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
     )
 
     if not is_completed:
@@ -211,28 +303,14 @@ def update_status(
 
     saved_files = []
 
-    # We will store the passport data here
     passport_data = None
 
     for filename in file_names:
 
-        # ----------------------------------------------------
-        # 1. Get the original filename
-        # ----------------------------------------------------
         filename = os.path.basename(filename)
 
-        # ----------------------------------------------------
-        # 2. Remove extension to get folder name
-        #
-        # PassportPiardon.pdf
-        #       ↓
-        # PassportPiardon
-        # ----------------------------------------------------
         document_name, extension = os.path.splitext(filename)
 
-        # ----------------------------------------------------
-        # 3. Create/use destination folder
-        # ----------------------------------------------------
         destination_folder = os.path.join(
             UPLOAD_DIR,
             document_name
@@ -243,10 +321,8 @@ def update_status(
             exist_ok=True
         )
 
-        # ----------------------------------------------------
-        # 4. Find temporary file
-        # ----------------------------------------------------
         if upload_id:
+
             temporary_folder = os.path.join(
                 UPLOAD_DIR,
                 upload_id
@@ -258,6 +334,7 @@ def update_status(
             )
 
         else:
+
             temporary_folder = None
 
             source_file = os.path.join(
@@ -265,9 +342,6 @@ def update_status(
                 filename
             )
 
-        # ----------------------------------------------------
-        # 5. Determine final filename
-        # ----------------------------------------------------
         destination_file = os.path.join(
             destination_folder,
             filename
@@ -288,9 +362,6 @@ def update_status(
 
             counter += 1
 
-        # ----------------------------------------------------
-        # 6. Move file to final destination
-        # ----------------------------------------------------
         if os.path.exists(source_file):
 
             os.replace(
@@ -300,8 +371,6 @@ def update_status(
 
         else:
 
-            # Fallback if dash_uploader saved directly
-            # in UPLOAD_DIR
             direct_file = os.path.join(
                 UPLOAD_DIR,
                 filename
@@ -322,9 +391,6 @@ def update_status(
 
                 continue
 
-        # ----------------------------------------------------
-        # 7. Parse passport AFTER it has been moved
-        # ----------------------------------------------------
         try:
 
             passport_data = parse_passport(
@@ -339,25 +405,17 @@ def update_status(
 
             passport_data = None
 
-        # ----------------------------------------------------
-        # 8. Delete temporary upload folder
-        # ----------------------------------------------------
         if temporary_folder and os.path.isdir(temporary_folder):
 
             try:
                 os.rmdir(temporary_folder)
 
             except OSError:
-                # Folder not empty
                 pass
 
         saved_files.append(
             destination_file
         )
-
-    # ========================================================
-    # 9. Extract values from passport
-    # ========================================================
 
     if passport_data:
 
@@ -368,7 +426,6 @@ def update_status(
         sex = passport_data.get("sex")
         passport_number = passport_data.get("passport_number")
 
-        # Convert Python date -> string for Dash input
         if date_of_birth:
             date_of_birth = date_of_birth.strftime("%Y-%m-%d")
 
@@ -418,10 +475,6 @@ def update_status(
             passport_number,
         )
 
-    # ========================================================
-    # 10. File was saved but parsing failed
-    # ========================================================
-
     return (
         html.Div(
             [
@@ -435,10 +488,6 @@ def update_status(
                 ),
             ]
         ),
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+        *empty_values,
     )
+
