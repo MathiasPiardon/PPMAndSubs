@@ -94,7 +94,7 @@ layout = html.Div([
 
                 dcc.Link(
                     html.Button(
-                        "Select Managers",
+                        "Login",
                         style={
                             "width": "200px",
                             "fontSize": "20px",
@@ -102,7 +102,7 @@ layout = html.Div([
                             "borderColor": "hsl(140, 80%, 90%)",
                         }
                     ),
-                    href="/select-managers"
+                    href="/login"
                 ),
             ],
             style={
